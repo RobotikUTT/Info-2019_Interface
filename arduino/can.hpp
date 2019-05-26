@@ -2,9 +2,12 @@
 #include "mcp2515.h"
 #include "Arduino.h"
 
+/* remplaced by ArduinoSTL :
 #include <array>
 #include <queue>
 #include <vector>
+*/
+#include <ArduinoSTL.h>
 
 #include "protocol.gen.hpp"
 
@@ -32,7 +35,7 @@ public:
 		std::vector<int> data;
 
 		if (canRxMsg.can_id == ARDUINO_CAN_ADDR || canRxMsg.can_id == ALL_CAN_ADDR) {
-			// Si le CAN est disponible 
+			// Si le CAN est disponible
 			if (can_error == MCP2515::ERROR_OK) {
 				int argIndex = 0;
 				int argCount = canRxMsg.data[0];
@@ -58,7 +61,7 @@ public:
 						data.push_back(canRxMsg.data[i + 1] + canRxMsg.data[i] << 8);
 						i += 1;
 					}
-					
+
 					argIndex ++;
 				}
 			}
@@ -66,7 +69,7 @@ public:
 
 		return data;
 	}
-	
+
 	/**
 	 * Return whether the frame data belong to given frame
 	 */
@@ -97,7 +100,7 @@ public:
 
 	/**
 	 * Format CAN frame data then add to buffer frames to send.
-	 * 
+	 *
 	 * Usage : send(SOME_FRAME_IN_PROTOCOL, framearg1, framearg2)
 	 */
 	void send(uint8_t[] mode, ...) {
