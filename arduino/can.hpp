@@ -26,41 +26,54 @@ public:
 
 	/**
 	 * Read a frame data and decode it's arguments
+	 * Returns an empty vector if no frame is fetched
 	 */
 	std::vector<int> read() {
-		MCP2515::ERROR can_error = mcp2515->readMessage(&canRxMsg);
+		uint8_t irq = mcp2515.getInterrupts();
 		std::vector<int> data;
+		MCP2515::ERROR can_error;
 
-		if (canRxMsg.can_id == ARDUINO_CAN_ADDR || canRxMsg.can_id == ALL_CAN_ADDR) {
-			// Si le CAN est disponible 
-			if (can_error == MCP2515::ERROR_OK) {
-				int argIndex = 0;
-				int argCount = canRxMsg.data[0];
-				const uint8_t[] frame;
+		if (irq & MCP2515::CANINTF_RX0IF) {
+			// frame contains received from RXB0 message
+			can_error = mcp2515.readMessage(MCP2515::RXB0, &canRxMsg);
+		} else if (irq & MCP2515::CANINTF_RX1IF) {
+			// frame contains received from RXB1 message
+			can_error = mcp2515.readMessage(MCP2515::RXB1, &canRxMsg);
+		} else {
+			return data;
+		}
+		
+		// If no error in message
+		if (can_error == MCP2515::ERROR_OK) {
+			int argIndex = 0;
+			int argCount = canRxMsg.data[0];
+			const uint8_t[] frame;
 
-				// Find frame
-				for (int j = 0; j < FRAMES_LENGTH; j++) {
-					// If right id
-					if (FRAMES[j][0] == canRxMsg.data[0]) {
-						frame = FRAMES[j];
-						break;
-					}
+			// Find frame
+			for (int j = 0; j < FRAMES_LENGTH; j++) {
+				// If right id
+				if (FRAMES[j][0] == canRxMsg.data[0]) {
+					frame = FRAMES[j];
+					break;
 				}
+			}
+			
+			// Set id as first argument
+			data.push_back(canRxMsg.data[0]);
 
-				// On récupère les données
-				for (int i = 0; i < canRxMsg.can_dlc && argIndex < argCount; i ++) {
-					// 1-byte long
-					if (frame[argIndex + 2] == 1) {
-						data.push_back(canRxMsg.data[i]);
+			// On récupère les données
+			for (int i = 1; i < canRxMsg.can_dlc && argIndex < argCount; i ++) {
+				// 1-byte long
+				if (frame[argIndex + 2] == 1) {
+					data.push_back(canRxMsg.data[i]);
 
-					// 2-byte long
-					} else if (frame[argIndex + 2] == 2) {
-						data.push_back(canRxMsg.data[i + 1] + canRxMsg.data[i] << 8);
-						i += 1;
-					}
-					
-					argIndex ++;
+				// 2-byte long
+				} else if (frame[argIndex + 2] == 2) {
+					data.push_back(canRxMsg.data[i + 1] + canRxMsg.data[i] << 8);
+					i += 1;
 				}
+				
+				argIndex ++;
 			}
 		}
 
@@ -71,7 +84,14 @@ public:
 	 * Return whether the frame data belong to given frame
 	 */
 	bool is(std::vector<int> data, uint8_t[] frame) {
-		return data.front() == frame[0];
+		return data.size() > 0 && data.front() == frame[0];
+	}
+
+	/**
+	 * Returns whether the frame contains enough data
+	 */
+	bool isValid(std::vector<int> data) {
+		return data.size() > 0;
 	}
 
 	/**
