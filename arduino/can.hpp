@@ -2,9 +2,12 @@
 #include "mcp2515.h"
 #include "Arduino.h"
 
+/* remplaced by ArduinoSTL :
 #include <array>
 #include <queue>
 #include <vector>
+*/
+#include <ArduinoSTL.h>
 
 #include "protocol.gen.hpp"
 
@@ -42,7 +45,7 @@ public:
 		} else {
 			return data;
 		}
-		
+
 		// If no error in message
 		if (can_error == MCP2515::ERROR_OK) {
 			int argIndex = 0;
@@ -57,7 +60,7 @@ public:
 					break;
 				}
 			}
-			
+
 			// Set id as first argument
 			data.push_back(canRxMsg.data[0]);
 
@@ -72,14 +75,14 @@ public:
 					data.push_back(canRxMsg.data[i + 1] + canRxMsg.data[i] << 8);
 					i += 1;
 				}
-				
+
 				argIndex ++;
 			}
 		}
 
 		return data;
 	}
-	
+
 	/**
 	 * Return whether the frame data belong to given frame
 	 */
@@ -117,7 +120,7 @@ public:
 
 	/**
 	 * Format CAN frame data then add to buffer frames to send.
-	 * 
+	 *
 	 * Usage : send(SOME_FRAME_IN_PROTOCOL, framearg1, framearg2)
 	 */
 	void send(uint8_t[] mode, ...) {

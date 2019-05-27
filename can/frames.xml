@@ -126,7 +126,7 @@
 		<word name="I" />
 		<word name="D" />
 	</frame>
-	
+
 	<frame name="set_pwm" id="15" source="bbb" dest="stm">
 		<description>Set wheels PWM</description>
 
@@ -155,7 +155,8 @@
 
 		<byte name="dist_front_left" />
 		<byte name="dist_front_right" />
-		<byte name="dist_back_left" />
-		<byte name="dist_back_right" />
+		<byte name="dist_left" />
+		<byte name="dist_right" />
+		<byte name="dist_back" />
 	</frame>
 </frames>
