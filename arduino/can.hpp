@@ -20,12 +20,11 @@ private:
 public:
 	void setup() {
 		mcp2515 = new MCP2515(PIN_SPI_SS);
-		MCP2515::ERROR can_error;
 
 		mcp2515->reset();
 		mcp2515->setBitrate(CAN_500KBPS, MCP_16MHZ);  // paramètres les plus rapides testés pour le CAN
 
-		can_error = mcp2515->setNormalMode();
+		mcp2515->setNormalMode();
 	}
 
 	/**
@@ -33,30 +32,20 @@ public:
 	 * Returns an empty vector if no frame is fetched
 	 */
 	std::vector<int> read() {
-		uint8_t irq = mcp2515->getInterrupts();
 		std::vector<int> data;
 		MCP2515::ERROR can_error = mcp2515->readMessage(&canRxMsg);
 
-		/*if (irq & MCP2515::CANINTF_RX0IF) {
-			// frame contains received from RXB0 message
-			can_error = mcp2515->readMessage(MCP2515::RXB0, &canRxMsg);
-		} else if (irq & MCP2515::CANINTF_RX1IF) {
-			// frame contains received from RXB1 message
-			can_error = mcp2515->readMessage(MCP2515::RXB1, &canRxMsg);
-		} else {
-			return data;
-		}*/
-
 		// If no error in message
 		if (can_error == MCP2515::ERROR_OK) {
-			int argIndex = 0;
-			int argCount = canRxMsg.data[0];
 
 			// Find frame
 			for (int j = 0; j < FRAMES_LENGTH; j++) {
 				// If right id
 				if (FRAMES[j][0] == canRxMsg.data[0]) {
 					auto frame = FRAMES[j];
+					int argCount = frame[1];
+					int argIndex = 0;
+
 					// Set id as first argument
 					data.push_back(canRxMsg.data[0]);
 
@@ -68,18 +57,17 @@ public:
 
 						// 2-byte long
 						} else if (frame[argIndex + 2] == 2) {
-							data.push_back(canRxMsg.data[i + 1] + canRxMsg.data[i] << 8);
+							data.push_back(canRxMsg.data[i + 1] + (canRxMsg.data[i] << 8));
 							i += 1;
 						}
 
 						argIndex ++;
 					}
-					
+
 					break;
 				}
 			}
 
-			
 		}
 
 		return data;
@@ -88,14 +76,14 @@ public:
 	/**
 	 * Return whether the frame data belong to given frame
 	 */
-	bool is(std::vector<int> data, uint8_t frame[]) {
+	bool is(const std::vector<int> data, const uint8_t frame[]) {
 		return data.size() > 0 && data.front() == frame[0];
 	}
 
 	/**
 	 * Returns whether the frame contains enough data
 	 */
-	bool isValid(std::vector<int> data) {
+	bool complete(const std::vector<int> data) {
 		return data.size() > 0;
 	}
 
@@ -126,7 +114,7 @@ public:
 	 *
 	 * Usage : send(SOME_FRAME_IN_PROTOCOL, framearg1, framearg2)
 	 */
-	void send(uint8_t mode[], ...) {
+	void send(const uint8_t mode[], ...) {
 		// Get all args
 		va_list argv;
 		va_start(argv, mode);

@@ -159,4 +159,17 @@
 		<byte name="dist_right" />
 		<byte name="dist_back" />
 	</frame>
+
+	<frame name="update_screen" id="30" source="arduino" dest="bbb">
+		<description>Update screen with points and robot status</description>
+
+		<word name="points" />
+		<byte name="status">
+			<booting v="0" />
+			<ready v="1" />
+			<running v="2" />
+			<error v="3" />
+			<done v="3" />
+		</byte>
+	</frame>
 </frames>
