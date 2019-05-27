@@ -2,7 +2,7 @@
 
 CanHandler can;
 
-void interrupts() {
+void interrupt() {
 	auto frame = can.read();
 
 	// Frame invalide ou erreur recue
@@ -19,7 +19,7 @@ void interrupts() {
 void setup() {
 	// Setup can
 	can.setup();
-	attachInterrupt(0, interrupts, FALLING);
+	attachInterrupt(0, interrupt, FALLING);
 }
 
 void loop() {

@@ -1,13 +1,9 @@
 #include <stdint.h>
-#include "mcp2515.h"
-#include "Arduino.h"
+#include <mcp2515.h>
+#include <Arduino.h>
 
-/* remplaced by ArduinoSTL :
-#include <array>
 #include <queue>
 #include <vector>
-*/
-#include <ArduinoSTL.h>
 
 #include "protocol.gen.hpp"
 
@@ -16,9 +12,14 @@ struct can_frame canTxMsg; //trame CAN à envoyer
 
 class CanHandler
 {
+
+private:
+	std::queue<uint8_t> buffer;
+	MCP2515* mcp2515;
+
 public:
 	void setup() {
-		mcp2515 = new MCP2515(SPI_SS_PIN);
+		mcp2515 = new MCP2515(PIN_SPI_SS);
 		MCP2515::ERROR can_error;
 
 		mcp2515->reset();
@@ -32,52 +33,53 @@ public:
 	 * Returns an empty vector if no frame is fetched
 	 */
 	std::vector<int> read() {
-		uint8_t irq = mcp2515.getInterrupts();
+		uint8_t irq = mcp2515->getInterrupts();
 		std::vector<int> data;
-		MCP2515::ERROR can_error;
+		MCP2515::ERROR can_error = mcp2515->readMessage(&canRxMsg);
 
-		if (irq & MCP2515::CANINTF_RX0IF) {
+		/*if (irq & MCP2515::CANINTF_RX0IF) {
 			// frame contains received from RXB0 message
-			can_error = mcp2515.readMessage(MCP2515::RXB0, &canRxMsg);
+			can_error = mcp2515->readMessage(MCP2515::RXB0, &canRxMsg);
 		} else if (irq & MCP2515::CANINTF_RX1IF) {
 			// frame contains received from RXB1 message
-			can_error = mcp2515.readMessage(MCP2515::RXB1, &canRxMsg);
+			can_error = mcp2515->readMessage(MCP2515::RXB1, &canRxMsg);
 		} else {
 			return data;
-		}
+		}*/
 
 		// If no error in message
 		if (can_error == MCP2515::ERROR_OK) {
 			int argIndex = 0;
 			int argCount = canRxMsg.data[0];
-			const uint8_t[] frame;
 
 			// Find frame
 			for (int j = 0; j < FRAMES_LENGTH; j++) {
 				// If right id
 				if (FRAMES[j][0] == canRxMsg.data[0]) {
-					frame = FRAMES[j];
+					auto frame = FRAMES[j];
+					// Set id as first argument
+					data.push_back(canRxMsg.data[0]);
+
+					// On récupère les données
+					for (int i = 1; i < canRxMsg.can_dlc && argIndex < argCount; i ++) {
+						// 1-byte long
+						if (frame[argIndex + 2] == 1) {
+							data.push_back(canRxMsg.data[i]);
+
+						// 2-byte long
+						} else if (frame[argIndex + 2] == 2) {
+							data.push_back(canRxMsg.data[i + 1] + canRxMsg.data[i] << 8);
+							i += 1;
+						}
+
+						argIndex ++;
+					}
+					
 					break;
 				}
 			}
 
-			// Set id as first argument
-			data.push_back(canRxMsg.data[0]);
-
-			// On récupère les données
-			for (int i = 1; i < canRxMsg.can_dlc && argIndex < argCount; i ++) {
-				// 1-byte long
-				if (frame[argIndex + 2] == 1) {
-					data.push_back(canRxMsg.data[i]);
-
-				// 2-byte long
-				} else if (frame[argIndex + 2] == 2) {
-					data.push_back(canRxMsg.data[i + 1] + canRxMsg.data[i] << 8);
-					i += 1;
-				}
-
-				argIndex ++;
-			}
+			
 		}
 
 		return data;
@@ -86,7 +88,7 @@ public:
 	/**
 	 * Return whether the frame data belong to given frame
 	 */
-	bool is(std::vector<int> data, uint8_t[] frame) {
+	bool is(std::vector<int> data, uint8_t frame[]) {
 		return data.size() > 0 && data.front() == frame[0];
 	}
 
@@ -102,16 +104,17 @@ public:
 	 */
 	void flush() {
 		can_frame canTxMsg;
-		canTxMsg.can_id = BBB_CAN_ADDR;
 
 		while (!buffer.empty()) {
 			// Get frame size
-			int8_t size = buffer.pop_front();
+			int8_t size = buffer.front();
 			canTxMsg.can_dlc = size;
+			canTxMsg.can_id = buffer.front() + 10;
 
 			// Then frame data
 			for (int8_t i = 0; i < size; i++) {
-				canTxMsg.data[i] = buffer.pop();
+				canTxMsg.data[i] = buffer.front();
+				buffer.pop();
 			}
 		}
 
@@ -123,7 +126,7 @@ public:
 	 *
 	 * Usage : send(SOME_FRAME_IN_PROTOCOL, framearg1, framearg2)
 	 */
-	void send(uint8_t[] mode, ...) {
+	void send(uint8_t mode[], ...) {
 		// Get all args
 		va_list argv;
 		va_start(argv, mode);
@@ -149,16 +152,14 @@ public:
 		}
 
 		// Then push data to buffer by first giving it's size
-		this->buffer.push_back(data.size());
+		this->buffer.push(data.size());
 
 		// Then frame data
 		for (const auto& value : data) {
-			this->buffer.push_back(value);
+			this->buffer.push(value);
 		}
 
 		va_end(argv);
 	}
 
-private:
-	std::queue<uint8_t> buffer;
 };
