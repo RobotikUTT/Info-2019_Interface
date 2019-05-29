@@ -9,8 +9,8 @@
 class SerialHandler
 {
 public:
-	void setup() {
-		Serial.begin(57600);
+	void begin(unsigned long baud) {
+		Serial.begin(baud);
 	}
 
 	/**
@@ -23,7 +23,7 @@ public:
 		if (Serial.available() > 0) {
 			// Read frame type
 			int8_t frame_type = Serial.read();
-
+			
 			// Find frame
 			for (int j = 0; j < FRAMES_LENGTH; j++) {
 				// If right id
@@ -38,12 +38,12 @@ public:
 					for (int argIndex = 0; argIndex < argCount; argIndex ++) {
 						// 1-byte long
 						if (frame[argIndex + 2] == 1) {
-							data.push_back(Serial.read());
+							data.push_back(readFromSerial());
 
 						// 2-byte long
 						} else if (frame[argIndex + 2] == 2) {
-							int first = Serial.read();
-							int second = Serial.read();
+							int first = readFromSerial();
+							int second = readFromSerial();
 
 							data.push_back(second + (first << 8));
 						}
@@ -55,6 +55,14 @@ public:
 		}
 
 		return data;
+	}
+
+	int readFromSerial() {
+		while(Serial.available() == 0) {
+			delay(10);
+		}
+
+		return Serial.read();
 	}
 
 	/**
