@@ -106,25 +106,25 @@
 	<frame name="set_left_pid" id="12" source="bbb" dest="stm">
 		<description>Set left STM's PID</description>
 
-		<word name="P" />
-		<word name="I" />
-		<word name="D" />
+		<word name="p" />
+		<word name="i" />
+		<word name="d" />
 	</frame>
 
 	<frame name="set_right_pid" id="13" source="bbb" dest="stm">
 		<description>Set right STM's PID</description>
 
-		<word name="P" />
-		<word name="I" />
-		<word name="D" />
+		<word name="p" />
+		<word name="i" />
+		<word name="d" />
 	</frame>
 
 	<frame name="set_both_pid" id="14" source="bbb" dest="stm">
 		<description>Set stm's PID on left and right side</description>
 
-		<word name="P" />
-		<word name="I" />
-		<word name="D" />
+		<word name="p" />
+		<word name="i" />
+		<word name="d" />
 	</frame>
 
 	<frame name="set_pwm" id="15" source="bbb" dest="stm">
