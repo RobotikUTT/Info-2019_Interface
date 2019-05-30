@@ -168,7 +168,7 @@
 			<ready v="1" />
 			<running v="2" />
 			<error v="3" />
-			<done v="3" />
+			<done v="4" />
 		</byte>
 	</frame>
 </frames>
