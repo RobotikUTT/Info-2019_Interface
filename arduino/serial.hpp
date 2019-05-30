@@ -108,6 +108,8 @@ public:
 			}
 		}
 
+		// Flush result
+		Serial.flush();
 		va_end(argv);
 	}
 

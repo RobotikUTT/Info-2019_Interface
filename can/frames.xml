@@ -171,4 +171,23 @@
 			<done v="4" />
 		</byte>
 	</frame>
+
+	<frame name="calibrate_dock" id="40" source="bbb" dest="">
+		<description>Start calibration of puck dock</description>
+	</frame>
+
+	<frame name="dock_calibration_done" id="41">
+		<description>Notice the dock is calibrated</description>
+	</frame>
+
+	<frame name="set_dock_height" id="42">
+		<description>Change dock height</description>
+
+		<word name="front_height" />
+		<word name="back_height" />
+	</frame>
+
+	<frame name="your_dock_has_fullfilled_your_request" id="43">
+		<description>Callback frame for dock height</description>
+	</frame>
 </frames>
