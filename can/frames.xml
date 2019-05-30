@@ -155,9 +155,8 @@
 
 		<byte name="dist_front_left" />
 		<byte name="dist_front_right" />
-		<byte name="dist_left" />
-		<byte name="dist_right" />
-		<byte name="dist_back" />
+		<byte name="dist_back_left" />
+		<byte name="dist_back_right" />
 	</frame>
 
 	<frame name="update_screen" id="30" source="arduino" dest="bbb">
