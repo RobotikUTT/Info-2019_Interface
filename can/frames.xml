@@ -172,12 +172,12 @@
 		</byte>
 	</frame>
 
-	<frame name="calibrate_dock" id="40" source="bbb" dest="">
-		<description>Start calibration of puck dock</description>
+	<frame name="fetch_puck" id="40" source="bbb" dest="">
+		<description>Fetch a puckk</description>
 	</frame>
 
-	<frame name="dock_calibration_done" id="41">
-		<description>Notice the dock is calibrated</description>
+	<frame name="puck_fetched_chief" id="41">
+		<description>Notice the puck has been retrieved</description>
 	</frame>
 
 	<frame name="set_dock_height" id="42">
