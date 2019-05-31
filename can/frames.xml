@@ -172,7 +172,7 @@
 		</byte>
 	</frame>
 
-	<frame name="calibrate_dock" id="40" source="bbb" dest="">
+	<frame name="calibrate_dock" id="40" source="bbb">
 		<description>Start calibration of puck dock</description>
 	</frame>
 
