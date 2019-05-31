@@ -172,7 +172,7 @@
 		</byte>
 	</frame>
 
-	<frame name="fetch_puck" id="40" source="bbb" dest="">
+	<frame name="fetch_puck" id="40" source="bbb">
 		<description>Fetch a puckk</description>
 	</frame>
 
